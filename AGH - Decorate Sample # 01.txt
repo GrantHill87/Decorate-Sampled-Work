@@ -1,0 +1,131 @@
+//DLSpooks
+//Created by A. Grant Hill
+//2D Definitions
+Actor SkulKING 11101//10001 SkulKING is the first actor I've made in a very long time.
+{//Begin grouping all 'like' scripts together in DECORATE, for better organization.
+//Will eventually have to make separate DECORATE scripts that are then 'included' in one main DECORATE scripting file, as this one is already extremely long.
+//$Category Sprites (2D)/Spooks (2D)
+//$Title SkulKING
+	Radius 31
+	Height 112
+	Mass 100000
+	XSCALE 0.3
+	YSCALE 0.3
+	Health 1600
+	Damage 190
+	MeleeDamage 80
+	MeleeRange 60
+	MeleeSound "SKULKG06"
+	Monster
+	Painchance 0
+	BloodType "SkulKINGchipper"
+	Speed 18
+	Obituary "%o was consumed by the SkulKING!"
+	//+SOLID already provided by his Monster status.//+PUSHABLE flag was removed.
+	+SHOOTABLE
+	+FLOORHUGGER//If he doesn't retain this flag, he has a much stronger proclivity for getting himself stuck.
+	+DROPOFF
+	+LOOKALLAROUND
+	+QUICKTORETALIATE
+	//+THRUACTORS//This will allow him to be more unrestricted in pursuing his target. Took it out because it conflicts with his attack and functionality, plus it would just be way too unfair to the player.
+	States
+	{
+	Spawn:
+		SKNG CD 1 A_Look
+		Loop
+	See:
+		SKNG A 0 A_Stop
+		SKNG A 0 A_PlaySound ("SkulKINGActive")
+		SKNG A 0 A_Chase
+		SKNG BCDBABCDCDCBABDCDBCDCDCBABDCBABCDCB 1 A_FaceTarget
+		SKNG A 0 A_JumpIfCloser (520, 36)
+		SKNG AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 0 A_Chase
+		Loop
+		SKNG A 0 A_FaceTarget
+		SKNG A 0 A_PlaySound ("SKULKG05")
+		SKNG E 1
+		SKNG F 1 A_FaceTarget
+		SKNG G 1
+		Goto Vicious
+	Vicious:
+		SKNG H 1 A_SkullAttack (22)
+		SKNG H 0 A_JumpIfCloser(520, 2)
+		SKNG H 1 A_Stop
+		Goto See
+		SKNG H 0
+		Loop
+	Melee:
+		SKNG A 0 A_Facetarget
+		SKNG A 0 A_PlaySound ("SKULKG06")
+		SKNG E 1
+		SKNG F 1 A_FaceTarget
+		SKNG G 1
+		SKNG H 1 A_MeleeAttack
+		SKNG G 1
+		SKNG F 1
+		SKNG E 4
+		SKNG A 8
+		SKNG B 12
+		SKNG C 12
+		SKNG D 12
+		Goto See
+	Death:
+		SKNG A 8 A_FadeOut
+		SKNG E 0 A_PlaySound ("SKULKG08")
+		SKNG E 8 A_FadeOut
+		SKNG F 8 A_FadeOut
+		SKNG G 12 A_FadeOut
+		SKNG H 12 A_FadeOut
+		SKNG H 0 A_Fall
+		Stop
+	}
+}
+Actor SkulKINGchipper//Standard bullet puff (instant hit projectile puff replacement) replacement. This awesome technqiue allows for pain sounds to be created on the intended actor, without the actor itself having to express its own pain state, which could otherwise inhibit its intended behavior.
+{
+	+NOBLOCKMAP
+	+NOGRAVITY
+	-ALLOWPARTICLES
+	+RANDOMIZE
+	VSpeed 1//Vertical speed of the graphic, upon spawning.
+	Mass 4
+	States
+	{
+	Spawn:
+		PUFF A 0
+		PUFF A 0 A_PlaySoundEX ("SKULKG07", "Body")
+		PUFF A 0 A_SpawnItemEx ("SkulKINGchip", 0, 0, 0, 0, 0, 0, 0, 1, 0)
+		PUFF A 4 BRIGHT
+		PUFF B 4
+		PUFF CD 4
+	Stop
+	}
+}
+Actor SkulKINGchip
+{
+	PROJECTILE
+	-SOLID
+	-NOGRAVITY
+	-NOTELEPORT
+	+RIPPER
+	+DONTBOUNCEONSKY
+	+DOOMBOUNCE
+	+BOUNCEONACTORS
+	+BLOODLESSIMPACT
+	+THRUACTORS //The hidden gem that made this whole script work as I wanted it to; else, the fragmented bone pieces wouldn't behave properly. Don't try to use the +NOCLIP flag instead -- creates other oddities.
+	SCALE 0.4
+	BOUNCEFACTOR 0.4
+	ReactionTime 27
+	Damage 0
+	States
+	{
+	Spawn:
+		SKCH A 0
+		SKCH A 0 ThrustThingZ (0, 47, 0, 1)
+		Goto See
+	See:
+		NULL A 0 ThrustThing (Random(0,255), 4, 0, 0)
+		SKCH A 4 ThrustThingZ (0, Random(1,7), 1, 1)
+		SKCH BCD 4 A_Countdown
+		Goto See+1
+	}
+}
